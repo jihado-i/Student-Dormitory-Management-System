@@ -2,7 +2,8 @@
 FİRAT ÜNİVERSİTESİ MÜHESNDİSLİK FAKÜLTESİ YAZILIM MÜHENDİSLİĞİ
 
 
-YMÜ41 YAZILIM GEÇERLEME VE SINAMA Proje Uygulaması ve Dokümantasyonu
+
+YMU416 YAZILIM PROJE YONETIMI
 
 Proje Adı:
 
@@ -16,5 +17,5 @@ MUHMMAED ADRA – 190290625
 
 Proje Yürütücüleri:
 
-Dr.Muhammed emre çolak
+Doç. Dr. MUSTAFA ULAŞ
 
