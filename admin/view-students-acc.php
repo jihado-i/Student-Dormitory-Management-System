@@ -4,31 +4,15 @@
     include('../includes/check-login.php');
     check_login();
 
-    if(isset($_POST['changepwd'])){
-    $op=$_POST['oldpassword'];
-    $np=$_POST['newpassword'];
-    $ai=$_SESSION['id'];
-    $udate=date('Y-m-d');
-        $sql="SELECT password FROM admin where password=?";
-        $chngpwd = $mysqli->prepare($sql);
-        $chngpwd->bind_param('s',$op);
-        $chngpwd->execute();
-        $chngpwd->store_result(); 
-        $row_cnt=$chngpwd->num_rows;;
-        if($row_cnt>0)
-        {
-            $con="update admin set password=?,updation_date=?  where id=?";
-    $chngpwd1 = $mysqli->prepare($con);
-    $chngpwd1->bind_param('ssi',$np,$udate,$ai);
-    $chngpwd1->execute();
-            $_SESSION['msg']=" Parola değiştirildi ";
-        } else {
-            $_SESSION['msg']="Parola geçerli değildir , doğru parolayı giriniz";
-        }	
-        
-
+    if(isset($_GET['del'])) {
+        $id=intval($_GET['del']);
+        $adn="DELETE from userregistration where id=?";
+            $stmt= $mysqli->prepare($adn);
+            $stmt->bind_param('i',$id);
+            $stmt->execute();
+            $stmt->close();	   
+            echo "<script>alert('Hesap başarıyla silindi');</script>" ;
     }
-
 ?>
 
 <!DOCTYPE html>
@@ -43,14 +27,24 @@
     <meta name="author" content="">
     <!-- Favicon icon -->
     <link rel="icon" type="image/png" sizes="16x16" href="../assets/images/favicon.png">
-    <title>Parola değiştirme</title>
+    <title> Öğrenci hesapları</title>
     <!-- Custom CSS -->
     <link href="../assets/extra-libs/c3/c3.min.css" rel="stylesheet">
     <link href="../assets/libs/chartist/dist/chartist.min.css" rel="stylesheet">
-     
+     <!-- This page plugin CSS -->
      <link href="../assets/extra-libs/datatables.net-bs4/css/dataTables.bootstrap4.css" rel="stylesheet">
-    
+    <!-- Custom CSS -->
     <link href="../dist/css/style.min.css" rel="stylesheet">
+
+    <script language="javascript" type="text/javascript">
+    var popUpWin=0;
+    function popUpWindow(URLStr, left, top, width, height){
+        if(popUpWin) {
+         if(!popUpWin.closed) popUpWin.close();
+            }
+            popUpWin = open(URLStr,'popUpWin', 'toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=no,copyhistory=yes,width='+510+',height='+430+',left='+left+', top='+top+',screenX='+left+',screenY='+top+'');
+        }
+    </script>
 
 </head>
 
@@ -101,23 +95,15 @@
             <div class="page-breadcrumb">
                 <div class="row">
                     <div class="col-7 align-self-center">
-                    <h4 class="page-title text-truncate text-dark font-weight-medium mb-1">Parola değiştirme</h4>
-                        
-                        <?php if(isset($_POST['changepwd']))
-                            { ?>
-                                <div class="alert alert-secondary alert-dismissible bg-secondary text-white border-0 fade show"
-                                    role="alert">
-                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
-                                    <strong> Mesaj </strong> <?php echo htmlentities($_SESSION['msg']); ?> <?php echo htmlentities($_SESSION['msg']=""); ?>
-                                </div>
-						<?php } ?>
-                        
+                    <h4 class="page-title text-truncate text-dark font-weight-medium mb-1"> Kayıtlı öğrenci hesapları</h4>
+                        <div class="d-flex align-items-center">
+                            <!-- <nav aria-label="breadcrumb">
+                                
+                            </nav> -->
+                        </div>
                     </div>
                     
                 </div>
-
             </div>
             <!-- ============================================================== -->
             <!-- End Bread crumb and right sidebar toggle -->
@@ -127,76 +113,60 @@
             <!-- ============================================================== -->
             <div class="container-fluid">
 
-                <form method="POST">
-
-                    <div class="row">
-
-
-                        <div class="col-sm-12 col-md-6 col-lg-4">
-                            <div class="card">
-                                <div class="card-body">
-                                    <h4 class="card-title"> Mevcut parola </h4>
-                                        <div class="form-group">
-                                        <input type="password" value="" name="oldpassword" id="oldpassword" class="form-control" onBlur="checkpass()" required="required">
-                                        <span id="password-availability-status" style="font-size:12px;"></span>
-                                        </div>
-                                    
+                <!-- Table Starts -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6 class="card-subtitle"> Tüm kayıtlı öğrenci hesaplarını görüntüleyin.</h6>
+                                <div class="table-responsive">
+                                    <table id="zero_config" class="table table-striped table-hover table-bordered no-wrap">
+                                        <thead class="thead-dark">
+                                            <tr>
+                                                <th>sıralama</th>
+                                                <th> Öğrenci Kimliği</th>
+                                                <th> Öğrenci adı</th>
+                                                <th>cinsiyeti</th>
+                                                <th> telefon numarası</th>
+                                                <th> E-posta</th>
+                                                <th></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                        <?php	
+                                        $aid=$_SESSION['id'];
+                                        $ret="SELECT * from userregistration";
+                                        $stmt= $mysqli->prepare($ret) ;
+                                        $stmt->execute() ;//ok
+                                        $res=$stmt->get_result();
+                                        $cnt=1;
+                                        while($row=$res->fetch_object())
+                                            {
+                                                ?>
+                                        <tr><td><?php echo $cnt;;?></td>
+                                        <td><?php echo $row->regNo;?></td>
+                                        <td><?php echo $row->firstName;?> <?php echo $row->middleName;?> <?php echo $row->lastName;?></td>
+                                        <td><?php echo $row->gender;?></td>
+                                        <td><?php echo $row->contactNo;?></td>
+                                        <td><?php echo $row->email;?></td>
+                                        <td>
+                                        <a href="view-students-acc.php?del=<?php echo $row->id;?>" title="Delete Record" onclick="return confirm("Öğrenci hesabını silmek istemiyorsunuz");"><i class="icon-close" style="color:red;"></i></a></td>
+                                        </tr>
+                                            <?php
+                                        $cnt=$cnt+1;
+                                            } ?>
+											
+										
+									</tbody>
+                                    </table>
                                 </div>
                             </div>
                         </div>
-
-                        <div class="col-sm-12 col-md-6 col-lg-4">
-                            <div class="card">
-                                <div class="card-body">
-                                    <h4 class="card-title">Yeni parola</h4>
-                                        <div class="form-group">
-                                        <input type="password" class="form-control" name="newpassword" id="newpassword" value="" required="required">
-                                        </div>
-                                    
-                                </div>
-                            </div>
-                        </div>
-
-
-                        <div class="col-sm-12 col-md-6 col-lg-4">
-                            <div class="card">
-                                <div class="card-body">
-                                    <h4 class="card-title"> Parolayı yine yaz   </h4>
-                                        <div class="form-group">
-                                        <input type="password" class="form-control" value="" required="required" id="cpassword" name="cpassword" >
-                                        </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <?php	
-                        $aid=$_SESSION['id'];
-                        $ret="SELECT * from admin where id=?";
-                            $stmt= $mysqli->prepare($ret) ;
-                        $stmt->bind_param('i',$aid);
-                        $stmt->execute() ;//ok
-                        $res=$stmt->get_result();
-                        //$cnt=1;
-                        while($row=$res->fetch_object())
-                        {
-                            ?>
-
-                        <h6 class="card-subtitle"><code>Son güncelleme </code> <?php echo $row->updation_date; }?> </h6>
-
-
-
                     </div>
+                </div>
+                
+                <!-- Table Ends -->
 
-                        <div class="form-actions">
-                            <div class="text-center">
-                                <button type="submit" name="changepwd" class="btn btn-success">Değiştir</button>
-                                <button type="reset" class="btn btn-danger">Sil</button>
-                            </div>
-                        </div>
-
-                 
-                 </form>
-                 
             </div>
             <!-- ============================================================== -->
             <!-- End Container fluid  -->
@@ -239,38 +209,6 @@
     <script src="../dist/js/pages/dashboards/dashboard1.min.js"></script>
     <script src="../assets/extra-libs/datatables.net/js/jquery.dataTables.min.js"></script>
     <script src="../dist/js/pages/datatable/datatable-basic.init.js"></script>
-
-    <script>
-    function checkAvailability() {
-        $("#loaderIcon").show();
-        jQuery.ajax({
-            url: "check-availability-admin.php",
-            data:'emailid='+$("#emailid").val(),
-            type: "POST",
-        success:function(data){
-            $("#user-availability-status").html(data);
-            $("#loaderIcon").hide();
-        },
-        error:function (){}
-        });
-    }
-    </script>
-
-    <script>
-    function checkpass() {
-        $("#loaderIcon").show();
-        jQuery.ajax({
-            url: "check-availability-admin.php",
-            data:'oldpassword='+$("#oldpassword").val(),
-            type: "POST",
-        success:function(data){
-            $("#password-availability-status").html(data);
-            $("#loaderIcon").hide();
-        },
-        error:function (){}
-        });
-    }
-    </script>
 
 </body>
 
